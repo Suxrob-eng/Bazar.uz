@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-center">
+            <div class="card-body">
+                {% if seller.avatar %}
+                    <img src="{{ seller.avatar.url }}" class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                {% else %}
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 150px; height: 150px; font-size: 48px;">
+                        {{ seller.full_name|first|upper }}
+                    </div>
+                {% endif %}
+                <h4>{{ seller.full_name }}</h4>
+                <p><i class="fas fa-map-marker-alt"></i> {{ seller.city }}, {{ seller.region }}</p>
+                <p><i class="fas fa-star text-warning"></i> Reyting: {{ seller.rating|floatformat:1 }}</p>
+                <p><i class="fas fa-check-circle text-success"></i> Sotuvlar: {{ seller.total_sales }}</p>
+                <button class="btn btn-success" onclick="showPhone('{{ seller.phone }}', this)" data-phone="{{ seller.phone }}"><i class="fas fa-phone"></i> Telefon</button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <h3>Sotuvchining e'lonlari</h3>
+        <div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px;">
+            {% for product in products %}
+            <div class="product-card" onclick="window.location='{% url 'product_detail' product.id %}'" style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                <div class="product-image" style="height: 150px;">
+                    {% with main_image=product.images.first %}
+                        {% if main_image %}
+                            <img src="{{ main_image.image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% else %}
+                            <img src="{% static 'images/no-image.jpg' %}" style="width: 100%; height: 100%; object-fit: cover;">
+                        {% endif %}
+                    {% endwith %}
+                </div>
+                <div class="product-info" style="padding: 10px;">
+                    <div class="product-price" style="font-size: 18px; font-weight: 700;">${{ product.price }}</div>
+                    <div class="product-title" style="font-size: 14px;">{{ product.title|truncatechars:30 }}</div>
+                </div>
+            </div>
+            {% empty %}
+            <p>Hozircha e'lonlar yo'q.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+<script>
+    function showPhone(phone, btn) {
+        if (btn.classList.contains('revealed')) return;
+        btn.innerHTML = `<i class="fas fa-phone"></i> ${phone}`;
+        btn.classList.add('revealed');
+    }
+</script>
+{% endblock %}

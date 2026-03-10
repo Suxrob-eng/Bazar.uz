@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<h2>Chat - {{ chat.product.title }}</h2>
+
+<div style="border:1px solid #ccc; padding:10px; height:400px; overflow-y:scroll;">
+    {% for message in messages %}
+        <p>
+            <strong>{{ message.sender.username }}:</strong>
+            {{ message.text }}
+        </p>
+    {% endfor %}
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <input type="text" name="text" placeholder="Xabar yozing..." style="width:80%;">
+    <button type="submit">Yuborish</button>
+</form>
+
+{% endblock %}

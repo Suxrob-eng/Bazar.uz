@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2>Qidiruv natijalari</h2>
+        <p class="text-muted">{{ total_count }} ta mahsulot topildi</p>
+    </div>
+</div>
+
+<!-- Filter form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" action="{% url 'search' %}">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">{{ form.q.label }}</label>
+                    {{ form.q }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">{{ form.category.label }}</label>
+                    {{ form.category }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">{{ form.condition.label }}</label>
+                    {{ form.condition }}
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Narx oralig'i</label>
+                    <div class="d-flex gap-2">
+                        {{ form.min_price }}
+                        {{ form.max_price }}
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">{{ form.sort.label }}</label>
+                    {{ form.sort }}
+                </div>
+                <div class="col-md-1 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Products grid -->
+<div class="products-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
+    {% for product in products %}
+    <div class="product-card" onclick="window.location='{% url 'product_detail' product.id %}'" style="background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); cursor: pointer;">
+        <div class="product-image" style="height: 200px; position: relative;">
+            {% with main_image=product.images.first %}
+                {% if main_image %}
+                    <img src="{{ main_image.image.url }}" alt="{{ product.title }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <img src="{% static 'images/no-image.jpg' %}" alt="No image" style="width: 100%; height: 100%; object-fit: cover;">
+                {% endif %}
+            {% endwith %}
+            {% if product.is_bargain %}
+                <span class="badge bg-success position-absolute top-0 end-0 m-2">Kelishish</span>
+            {% endif %}
+        </div>
+        <div class="product-info p-3">
+            <div class="product-price fw-bold text-primary fs-4">${{ product.price }}</div>
+            <div class="product-title fw-semibold">{{ product.title|truncatechars:50 }}</div>
+            <div class="product-location text-muted small"><i class="fas fa-map-marker-alt"></i> {{ product.location }}</div>
+            <div class="product-date text-muted small"><i class="far fa-clock"></i> {{ product.created_at|timesince }} oldin</div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center py-5">
+            <i class="fas fa-box-open fa-4x mb-3"></i>
+            <h4>Hech narsa topilmadi</h4>
+            <p>Boshqa qidiruv so'zini sinab ko'ring yoki filtrlarni o'zgartiring.</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if products.has_other_pages %}
+<nav class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if products.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ products.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link"><i class="fas fa-chevron-left"></i></span>
+        </li>
+        {% endif %}
+
+        {% for i in products.paginator.page_range %}
+            {% if products.number == i %}
+            <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+            {% elif i > products.number|add:'-3' and i < products.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ i }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ i }}</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ products.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <span class="page-link"><i class="fas fa-chevron-right"></i></span>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

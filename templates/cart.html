@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="card shadow">
+    <div class="card-header bg-success text-white">
+        <h4 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Savatcha</h4>
+    </div>
+    <div class="card-body">
+        {% if cart_items %}
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Rasm</th>
+                        <th>Mahsulot</th>
+                        <th>Narxi</th>
+                        <th>Soni</th>
+                        <th>Jami</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in cart_items %}
+                    <tr>
+                        <td style="width: 80px;">
+                            {% with main_image=item.product.images.first %}
+                                {% if main_image %}
+                                    <img src="{{ main_image.image.url }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                {% else %}
+                                    <img src="{% static 'images/no-image.jpg' %}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                                {% endif %}
+                            {% endwith %}
+                        </td>
+                        <td>
+                            <a href="{% url 'product_detail' item.product.id %}">{{ item.product.title }}</a>
+                        </td>
+                        <td>${{ item.product.price }}</td>
+                        <td>
+                            <form method="post" action="{% url 'update_cart_quantity' item.product.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="decrease">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary" {% if item.quantity <= 1 %}disabled{% endif %}>-</button>
+                            </form>
+                            <span class="mx-2">{{ item.quantity }}</span>
+                            <form method="post" action="{% url 'update_cart_quantity' item.product.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="increase">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">+</button>
+                            </form>
+                        </td>
+                        <td>${{ item.subtotal }}</td>
+                        <td>
+                            <form method="post" action="{% url 'remove_from_cart' item.product.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="text-end">
+            <h4>Jami: ${{ total }}</h4>
+            <a href="{% url 'checkout' %}" class="btn btn-success">Buyurtma berish</a>
+            <form method="post" action="{% url 'clear_cart' %}" class="d-inline">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger">Savatchani tozalash</button>
+            </form>
+        </div>
+        {% else %}
+        <p class="text-center">Savatcha bo'sh</p>
+        <div class="text-center">
+            <a href="{% url 'home' %}" class="btn btn-primary">Bazarga o'tish</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

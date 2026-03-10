@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="fas fa-truck me-2"></i>Buyurtma ma'lumotlari</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <button type="submit" class="btn btn-primary w-100">Buyurtmani yakunlash</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">Buyurtma qilinayotgan mahsulotlar</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for item in cart_items %}
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>{{ item.product.title }} x {{ item.quantity }}</span>
+                        <strong>${{ item.subtotal }}</strong>
+                    </li>
+                    {% endfor %}
+                    <li class="list-group-item d-flex justify-content-between fw-bold">
+                        <span>Jami:</span>
+                        <span>${{ total }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

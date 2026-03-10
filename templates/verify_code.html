@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4 class="mb-0"><i class="fas fa-envelope me-2"></i>Email tasdiqlash</h4>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-envelope-open-text fa-4x text-primary mb-3"></i>
+                    <h5>{{ email }} manziliga</h5>
+                    <p class="text-muted">6 xonali kod yuborildi. Kodni kiriting:</p>
+                </div>
+                
+                <form method="post" id="codeForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="code" id="codeInput">
+                    
+                    <!-- 6 xonali kod uchun raqamli tugmalar -->
+                    <div class="code-display mb-4">
+                        <div class="d-flex justify-content-center gap-2">
+                            <span class="code-digit" id="digit1">_</span>
+                            <span class="code-digit" id="digit2">_</span>
+                            <span class="code-digit" id="digit3">_</span>
+                            <span class="code-digit" id="digit4">_</span>
+                            <span class="code-digit" id="digit5">_</span>
+                            <span class="code-digit" id="digit6">_</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Raqamli tugmalar 1-9 -->
+                    <div class="number-pad">
+                        <div class="row g-2 mb-2">
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="1">1</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="2">2</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="3">3</button></div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="4">4</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="5">5</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="6">6</button></div>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="7">7</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="8">8</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="9">9</button></div>
+                        </div>
+                        <div class="row g-2">
+                            <div class="col-4"><button type="button" class="btn btn-outline-secondary number-btn w-100" data-num="clear">C</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-primary number-btn w-100" data-num="0">0</button></div>
+                            <div class="col-4"><button type="button" class="btn btn-outline-secondary number-btn w-100" data-num="back"><i class="fas fa-backspace"></i></button></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary w-100 py-2" id="submitBtn">
+                            <i class="fas fa-check me-2"></i>Tasdiqlash
+                        </button>
+                    </div>
+                </form>
+                
+                <div class="text-center mt-3">
+                    <p class="mb-2">Kod kelmadimi?</p>
+                    <a href="{% url 'resend_code' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-redo-alt me-2"></i>Qayta yuborish
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .code-digit {
+        width: 50px;
+        height: 60px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        background: #f8f9fa;
+    }
+    .number-btn {
+        height: 60px;
+        font-size: 20px;
+        font-weight: bold;
+        border-radius: 10px;
+    }
+    .number-btn:active {
+        transform: scale(0.95);
+    }
+    .card {
+        border-radius: 15px;
+        border: none;
+    }
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+        padding: 20px;
+    }
+</style>
+
+<script>
+    let code = [];
+    
+    document.querySelectorAll('.number-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const num = this.dataset.num;
+            
+            if (num === 'clear') {
+                // C - tozalash
+                code = [];
+            } else if (num === 'back') {
+                // Backspace - o'chirish
+                code.pop();
+            } else {
+                // Raqam qo'shish
+                if (code.length < 6) {
+                    code.push(num);
+                }
+            }
+            
+            updateDisplay();
+        });
+    });
+    
+    function updateDisplay() {
+        // Kodni display qilish
+        for (let i = 0; i < 6; i++) {
+            const digit = document.getElementById(`digit${i+1}`);
+            if (i < code.length) {
+                digit.textContent = code[i];
+                digit.style.background = '#e3f2fd';
+                digit.style.borderColor = '#0d6efd';
+            } else {
+                digit.textContent = '_';
+                digit.style.background = '#f8f9fa';
+                digit.style.borderColor = '#dee2e6';
+            }
+        }
+        
+        // Inputga kodni yozish
+        document.getElementById('codeInput').value = code.join('');
+    }
+    
+    // Form submit bo'lganda
+    document.getElementById('codeForm').addEventListener('submit', function(e) {
+        if (code.length < 6) {
+            e.preventDefault();
+            alert('Iltimos, 6 xonali kodni to\'liq kiriting!');
+        }
+    });
+</script>
+{% endblock %}

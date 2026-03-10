@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Mening buyurtmalarim</h2>
+<div class="row">
+    {% for order in orders %}
+    <div class="col-md-6 mb-3">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5>Buyurtma #{{ order.id }} <span class="badge bg-{% if order.status == 'pending' %}warning{% elif order.status == 'processing' %}info{% elif order.status == 'delivered' %}success{% else %}danger{% endif %}">{{ order.get_status_display }}</span></h5>
+            </div>
+            <div class="card-body">
+                <p><strong>Sana:</strong> {{ order.created_at|date:"d.m.Y H:i" }}</p>
+                <p><strong>Jami:</strong> ${{ order.total_amount }}</p>
+                <p><strong>Yetkazish manzili:</strong> {{ order.city }}, {{ order.address }}</p>
+                <h6>Mahsulotlar:</h6>
+                <ul>
+                    {% for item in order.items.all %}
+                    <li>{{ item.product_title }} x {{ item.quantity }} – ${{ item.subtotal }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p>Hali buyurtmalar yo'q.</p>
+    {% endfor %}
+</div>
+{% endblock %}

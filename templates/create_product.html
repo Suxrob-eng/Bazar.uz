@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Yangi e'lon qo'shish</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Kategoriya <span class="text-danger">*</span></label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="text-danger">{{ form.category.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Sarlavha <span class="text-danger">*</span></label>
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-danger">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label fw-bold">Tavsif <span class="text-danger">*</span></label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Narx ($) <span class="text-danger">*</span></label>
+                            {{ form.price }}
+                            {% if form.price.errors %}
+                                <div class="text-danger">{{ form.price.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Holati <span class="text-danger">*</span></label>
+                            {{ form.condition }}
+                            {% if form.condition.errors %}
+                                <div class="text-danger">{{ form.condition.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Joylashuv <span class="text-danger">*</span></label>
+                            {{ form.location }}
+                            {% if form.location.errors %}
+                                <div class="text-danger">{{ form.location.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mt-4">
+                                {{ form.is_bargain }}
+                                <label class="form-check-label fw-bold" for="{{ form.is_bargain.id_for_label }}">
+                                    Narx kelishish mumkin
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <h5 class="mt-4 mb-3">Rasmlar (maksimal 5 ta)</h5>
+                    {{ formset.management_form }}
+                    
+                    <div class="row">
+                        {% for f in formset %}
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label small">Rasm {{ forloop.counter }}</label>
+                                        {{ f.image }}
+                                        {% if f.image.errors %}
+                                            <div class="text-danger small">{{ f.image.errors }}</div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="form-check">
+                                        {{ f.is_main }}
+                                        <label class="form-check-label small" for="{{ f.is_main.id_for_label }}">
+                                            Asosiy rasm
+                                        </label>
+                                    </div>
+                                    {% if f.instance.pk %}
+                                        <div class="mt-2">
+                                            <img src="{{ f.instance.image.url }}" width="100%" style="max-height: 100px; object-fit: cover;">
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="mt-4 d-flex justify-content-between">
+                        <a href="{% url 'home' %}" class="btn btn-secondary">Bekor qilish</a>
+                        <button type="submit" class="btn btn-warning px-5">E'lon qo'shish</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 8px;
+        border: 1px solid #dee2e6;
+        padding: 10px 15px;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #ffc107;
+        box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+    }
+    .card {
+        border-radius: 10px;
+        border: none;
+    }
+    .card-header {
+        border-radius: 10px 10px 0 0 !important;
+    }
+</style>
+{% endblock %}

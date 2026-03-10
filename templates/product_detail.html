@@ -1,0 +1,294 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <!-- Mahsulot asosiy qismi -->
+    <div class="col-md-8">
+        <div class="card shadow mb-4">
+            <div class="card-body">
+                <!-- Rasmlar karuseli -->
+                <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        {% for image in product.images.all %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <img src="{{ image.image.url }}" class="d-block w-100" style="height: 400px; object-fit: contain;" alt="{{ product.title }}">
+                        </div>
+                        {% empty %}
+                        <div class="carousel-item active">
+                            <img src="{% static 'images/no-image.jpg' %}" class="d-block w-100" style="height: 400px; object-fit: contain;" alt="No image">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if product.images.count > 1 %}
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                    {% endif %}
+                </div>
+                
+                <h2 class="mt-3">{{ product.title }}</h2>
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="text-primary">${{ product.price }}</h3>
+                    <span class="badge bg-{% if product.condition == 'new' %}success{% elif product.condition == 'like_new' %}info{% else %}warning{% endif %} fs-6">
+                        {{ product.get_condition_display }}
+                    </span>
+                </div>
+                
+                <hr>
+                
+                <h5>Mahsulot haqida:</h5>
+                <p>{{ product.description|linebreaks }}</p>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <p><i class="fas fa-map-marker-alt text-danger"></i> <strong>Joylashuv:</strong> {{ product.location }}</p>
+                        <p><i class="fas fa-eye text-info"></i> <strong>Ko'rishlar:</strong> {{ product.views_count }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><i class="fas fa-calendar-alt text-secondary"></i> <strong>Qo'shilgan:</strong> {{ product.created_at|date:"d.m.Y" }}</p>
+                        {% if product.is_bargain %}
+                        <p><span class="badge bg-success">Narx kelishish mumkin</span></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sharhlar bo'limi (Review) -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-star me-2"></i>Sharhlar ({{ reviews.count }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-4">
+                    <h6>O'rtacha reyting: 
+                        <span class="text-warning">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_rating %}
+                                    <i class="fas fa-star"></i>
+                                {% else %}
+                                    <i class="far fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            ({{ avg_rating }})
+                        </span>
+                    </h6>
+                </div>
+                
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_review' product.id %}" class="mb-4">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Baholash:</label>
+                            {{ review_form.rating }}
+                        </div>
+                        <div class="mb-3">
+                            {{ review_form.comment }}
+                        </div>
+                        <button type="submit" class="btn btn-info">Sharh qoldirish</button>
+                    </form>
+                {% else %}
+                    <div class="alert alert-info">
+                        Sharh qoldirish uchun <a href="{% url 'user_login' %}">kiring</a>.
+                    </div>
+                {% endif %}
+                
+                {% for review in reviews %}
+                    <div class="d-flex mb-3 p-3 bg-light rounded">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-info text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                {{ review.user.username|first|upper }}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1 fw-bold">{{ review.user.username }}</h6>
+                                <small class="text-muted">{{ review.created_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+                            <div class="mb-1">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <p class="mb-0">{{ review.comment }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted">Hali sharhlar yo'q. Birinchi bo'lib fikr bildiring!</p>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Kommentlar bo'limi (Comment) -->
+        <div class="card shadow mb-4">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Kommentlar ({{ product.comments.count }})</h5>
+            </div>
+            <div class="card-body">
+                {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'add_comment' product.id %}" class="mb-4">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <input type="text" name="text" class="form-control" placeholder="Komment yozing..." required>
+                            <button type="submit" class="btn btn-success"><i class="fas fa-paper-plane"></i> Yuborish</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <div class="alert alert-info">
+                        Komment qoldirish uchun <a href="{% url 'user_login' %}">kiring</a>.
+                    </div>
+                {% endif %}
+                
+                {% for comment in product.comments.all %}
+                    <div class="d-flex mb-3 p-3 bg-light rounded">
+                        <div class="flex-shrink-0">
+                            <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                {{ comment.user.username|first|upper }}
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="d-flex justify-content-between">
+                                <h6 class="mb-1 fw-bold">{{ comment.user.username }}</h6>
+                                <small class="text-muted">{{ comment.created_at|date:"d.m.Y H:i" }}</small>
+                            </div>
+                            <p class="mb-0">{{ comment.text }}</p>
+                        </div>
+                    </div>
+                {% empty %}
+                    <p class="text-muted">Hali komment yo'q. Birinchi bo'lib fikr bildiring!</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sotuvchi ma'lumotlari -->
+    <div class="col-md-4">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>Sotuvchi</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if product.seller.avatar %}
+                    <img src="{{ product.seller.avatar.url }}" class="rounded-circle mb-3" style="width: 100px; height: 100px; object-fit: cover;">
+                {% else %}
+                    <div class="rounded-circle bg-warning d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 100px; height: 100px; font-size: 36px;">
+                        {{ product.seller.full_name|first|upper }}
+                    </div>
+                {% endif %}
+                <h5>{{ product.seller.full_name }}</h5>
+                <p><i class="fas fa-star text-warning"></i> Reyting: {{ product.seller.rating|floatformat:1 }}</p>
+                <p><i class="fas fa-map-marker-alt"></i> {{ product.seller.city }}, {{ product.seller.region }}</p>
+                
+                <button class="btn btn-success w-100 mb-2" onclick="showPhone('{{ product.seller.phone }}', this)" data-phone="{{ product.seller.phone }}">
+                    <i class="fas fa-phone"></i> Telefon raqam
+                </button>
+                
+                {% if user.is_authenticated and user != product.seller.user %}
+                <a href="{% url 'start_chat' product.id %}" class="btn btn-primary w-100 mb-2">
+                    <i class="fas fa-comment"></i> Xabar yozish
+                </a>
+                {% endif %}
+                
+                <a href="{% url 'seller_profile' product.seller.id %}" class="btn btn-outline-secondary w-100">
+                    Barcha e'lonlari
+                </a>
+                
+                <div class="mt-3">
+                    <button class="btn btn-outline-danger w-100" onclick="toggleFavorite({{ product.id }})">
+                        <i class="{% if is_favorite %}fas{% else %}far{% endif %} fa-heart me-2"></i>
+                        {% if is_favorite %}Saqlanganlardan olib tashlash{% else %}Saqlanganlarga qo'shish{% endif %}
+                    </button>
+                </div>
+                
+                <div class="mt-2">
+                    <button class="btn btn-outline-warning w-100" data-bs-toggle="modal" data-bs-target="#complaintModal">
+                        <i class="fas fa-exclamation-triangle"></i> Shikoyat qilish
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- O'xshash mahsulotlar -->
+        {% if similar_products %}
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">O'xshash mahsulotlar</h5>
+            </div>
+            <div class="card-body">
+                {% for product in similar_products %}
+                <div class="d-flex mb-3">
+                    <div style="width: 60px; height: 60px; margin-right: 10px;">
+                        {% with main_image=product.images.first %}
+                            {% if main_image %}
+                                <img src="{{ main_image.image.url }}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                            {% else %}
+                                <img src="{% static 'images/no-image.jpg' %}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                    <div>
+                        <a href="{% url 'product_detail' product.id %}">{{ product.title|truncatechars:30 }}</a>
+                        <div class="text-primary fw-bold">${{ product.price }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Shikoyat modal -->
+<div class="modal fade" id="complaintModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title">Shikoyat qilish</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'add_complaint' product.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    {{ complaint_form.as_p }}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Bekor qilish</button>
+                    <button type="submit" class="btn btn-warning">Yuborish</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleFavorite(productId) {
+        fetch(`/toggle-favorite/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            location.reload();
+        });
+    }
+    
+    function showPhone(phone, btn) {
+        if (btn.classList.contains('revealed')) return;
+        btn.innerHTML = `<i class="fas fa-phone"></i> ${phone}`;
+        btn.classList.add('revealed');
+    }
+</script>
+{% endblock %}
