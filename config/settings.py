@@ -26,7 +26,12 @@ SECRET_KEY = 'django-insecure-pu_1osfxrl#-pj8tb5qp!49^&m^3t-+2*84#60x4txvas$zai+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["*.onrender.com", "localhost", "127.0.0.1"]
+
+ALLOWED_HOSTS = [
+    "127.0.0.1",
+    "localhost",
+    ".onrender.com"
+]
 
 
 
@@ -132,9 +137,12 @@ EMAIL_HOST_PASSWORD = 'rpbi auad mzfz jnkx'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = [".onrender.com"]
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 RECAPTCHA_PUBLIC_KEY = '6LedwoUsAAAAAJ2Ogk18IJqsggnXH7tWfcsHrRg-'
 RECAPTCHA_PRIVATE_KEY = '6LedwoUsAAAAAK5JbO3Q9KPDZUfncLp5mhOJULSl'
 
-CSRF_TRUSTED_ORIGINS = ['http://127.0.0.1:8000', 'http://localhost:8000']
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.onrender.com"
+]
