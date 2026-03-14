@@ -39,6 +39,16 @@ from .models import PhoneVerification, EmailVerification
 import random
 import requests
 
+def send_verification_email(recipient_email, code):
+    """Tasdiqlash kodini email orqali yuborish"""
+    subject = "Tasdiqlash kodi"
+    message = f"Sizning tasdiqlash kodingiz: {code}"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    recipient_list = [recipient_email]
+    
+    send_mail(subject, message, from_email, recipient_list)
+
+
 # 1-QADAM: Ro'yxatdan o'tish (barcha ma'lumotlar)
 def register_step1(request):
     if request.method == 'POST':
